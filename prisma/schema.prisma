@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  StudentId String? @unique @db.VarChar(8)
+  prefix     String? @db.VarChar(20)
+  fname      String? @db.VarChar(50)
+  lname      String? @db.VarChar(50)
+  nickname   String? @db.VarChar(50)
+  password  String  @db.VarChar(255) @default("1234") 
+  roleId    String? @db.VarChar(20)
+  role      Role?   @relation(fields: [roleId], references: [roleId])
+  img       String? @db.Text
+  createdAt DateTime @default(now())
+  majorId   String? @db.VarChar(20)
+  major     major?   @relation(fields: [majorId], references: [majorId])
+
+  checkins   Checkin[]
+
+  phone     String? @db.VarChar(15)
+  email     String? @db.VarChar(100)
+  gen       String? @db.VarChar(10)
+
+  @@map("users")
+}
+
+// Model Zone (for grouping devices)
+model major {
+  id       Int     @id @default(autoincrement())
+  majorId  String  @unique @db.VarChar(20)
+  name     String  @db.VarChar(100)
+  students User[]
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(50)
+  roleId String @unique @db.VarChar(20)
+  users User[]
+}
+
+model Zone {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  devices  Device[]
+}
+
+model Building {
+  buildingCode String @id @map("building_code") @db.VarChar(20)
+  buildingName String @map("building_name") @db.VarChar(200)
+
+  rooms Room[]
+
+  @@map("building")
+}
+
+model Room {
+  roomCode     String  @id @map("room_code") @db.VarChar(10)
+  buildingCode String? @map("building_code") @db.VarChar(20)
+  roomFloor    String? @map("room_floor") @db.VarChar(10)
+  roomCapacity String? @map("room_capacity") @db.VarChar(13)
+  roomDesc     String? @map("room_desc") @db.VarChar(47)
+
+  building Building? @relation(fields: [buildingCode], references: [buildingCode])
+
+  device    Device? @relation("RoomDevice")
+  sessions  ClassSession[]
+  checkins  Checkin[]
+
+  @@map("room")
+}
+
+// Model Ad
+model Ad {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  type      String   @default("IMAGE") 
+  devices   Device[]
+  activities Activity[]
+  createdAt DateTime @default(now())
+}
+
+// Model Activity
+model Activity {
+  id          String   @id @default(uuid())
+  devices     Device[]
+  title       String
+  description String?
+  imageUrl    String?
+  startTime   DateTime
+  endTime     DateTime
+  adId        String?
+  ad          Ad?      @relation(fields: [adId], references: [id])
+  qrCodeId    String?
+  qrCode      QrCode?  @relation(fields: [qrCodeId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model AuditLog (for tracking changes)
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  username  String
+  action    String   
+  targetId  String
+  details   Json?
+  createdAt DateTime @default(now())
+}
+
+// Model QrCode
+model QrCode {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  type        String   @default("GENERATED") 
+  data        String   
+  createdAt   DateTime @default(now())
+  activities  Activity[]
+}
+
+// Model Device
+model Device {
+  id         String @id @default(uuid())
+  macAddress String @unique
+  deviceName String?
+
+  roomCode String? @unique
+  room     Room? @relation("RoomDevice", fields: [roomCode], references: [roomCode])
+
+  ipAddress String?
+  status    String @default("PENDING")
+  lastSeen  DateTime @default(now())
+
+  zoneId String?
+  zone   Zone? @relation(fields: [zoneId], references: [id])
+
+  adId String?
+  ad   Ad? @relation(fields: [adId], references: [id])
+
+  activities Activity[]
+  sessions   ClassSession[]
+
+  lastCommand String?
+}
+
+model ClassSession {
+  id           Int      @id @default(autoincrement())
+
+  subjectId    Int      @map("subject_id")
+  roomId       String   @map("room_id") @db.VarChar(10)
+  deviceId     String   @map("device_id")
+
+  qrToken      String   @unique @map("qr_token") @db.VarChar(255)
+  startTime    DateTime @map("start_time")
+  endTime      DateTime @map("end_time")
+  maxStudents  Int      @map("max_students")
+
+  room        Room       @relation(fields: [roomId], references: [roomCode])
+  device      Device     @relation(fields: [deviceId], references: [id])
+
+  @@map("class_session")
+}
+
+model Checkin {
+  id         Int       @id @default(autoincrement())
+  StudentId String    @map("student_id") @db.VarChar(8)
+  roomCode   String    @map("room_code") @db.VarChar(10)
+  checkIn    DateTime? @map("check_in")
+  checkOut   DateTime? @map("check_out")
+
+  student User @relation(fields: [StudentId], references: [StudentId])
+  room    Room    @relation(fields: [roomCode], references: [roomCode])
+
+  @@index([StudentId])
+  @@index([roomCode])
+  @@index([checkIn])
+
+  @@map("checkin")
+}
