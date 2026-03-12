@@ -18,7 +18,7 @@ export default function AccessFlowTester() {
     const [loading, setLoading] = useState(false)
     const [adminName, setAdminName] = useState<string | null>(null)
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6060'
+    const API_URL = process.env.NEXT_PUBLIC_API_ACCESS_WEB_CONFIG || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
     const WEB_CONFIG_URL = process.env.NEXT_PUBLIC_LINK_WEBCONFIG || 'http://localhost:3000'
 
     const generateTestPath = async () => {
