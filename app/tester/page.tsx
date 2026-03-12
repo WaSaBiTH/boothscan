@@ -36,7 +36,7 @@ export default function AccessFlowTester() {
             if (!res.ok) throw new Error(data.error || 'Failed to generate path')
 
             setGeneratedPath(data.path)
-            
+
             // fetch fname for display check
             try {
                 const checkRes = await fetch(`${API_URL}/api/users/profile?studentId=${username}`);
@@ -46,7 +46,7 @@ export default function AccessFlowTester() {
                         setAdminName(checkData.user.fname);
                     }
                 }
-            } catch (ignore) {}
+            } catch (ignore) { }
 
             toast.success("Path generated successfully!")
         } catch (err: any) {
@@ -109,7 +109,7 @@ export default function AccessFlowTester() {
                                 <ShieldCheck className="w-5 h-5 text-emerald-400" />
                                 <h3 className="font-bold text-emerald-400">2. Generated Ticket</h3>
                             </div>
-                            
+
                             {adminName && (
                                 <div className="text-sm text-emerald-300 bg-emerald-950/50 border border-emerald-500/30 p-2 rounded mb-2">
                                     <span className="font-bold text-emerald-400">Admin Name Found: </span>
