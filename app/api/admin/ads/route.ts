@@ -16,7 +16,7 @@ async function createAuditLog(userId: string | number, username: string, action:
 export async function GET() {
     try {
         const ads = await prisma.ad.findMany({
-            include: { devices: { select: { id: true, deviceName: true } } },
+            include: { devices: { select: { id: true, deviceName: true, roomCode: true } } },
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(ads.map(ad => ({ ...ad, deviceCount: ad.devices.length, devices: ad.devices })));
