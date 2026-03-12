@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
         const tokenData = activeQrTokens.get(token);
         if (tokenData) {
-            // Extend token lifespan by 5 minutes from page load/pingd dsadasd
+            // Extend token lifespan by 5 minutes from page load/ping
             tokenData.expires = Date.now() + (5 * 60 * 1000);
             activeQrTokens.set(token, tokenData);
 
